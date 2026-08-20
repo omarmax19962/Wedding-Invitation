@@ -740,8 +740,7 @@ cal2.addEventListener('click',()=>openSheet(cal2));
 
 /* tapping the card lands on the date, then points at the button */
 document.querySelector('.card').addEventListener('click',()=>{
-  const wait=matchMedia('(prefers-reduced-motion:reduce)').matches?0:900;
-  setTimeout(()=>{ cal.classList.remove('pulse'); void cal.offsetWidth; cal.classList.add('pulse'); },wait);
+  document.getElementById('venue').scrollIntoView({behavior:'smooth'});
 });
 
 maps.href=CONFIG.mapsUrl;
