@@ -889,11 +889,11 @@ function latch(){
 }
 
 /* ══ GATE ════════════════════════════════════════════════ */
-const seen = sessionStorage.getItem('opened')==='1' || location.hash.length>1;
+const seen = location.hash.length>1;
 function unlock(){
   gate.classList.add('gone'); threshold.classList.add('gone');
   document.body.classList.remove('locked');
-  sessionStorage.setItem('opened','1'); observeAll(); parallax();
+  observeAll(); parallax();
   if(location.hash.length>1){ const el=document.querySelector(location.hash); if(el) el.scrollIntoView(); }
 }
 function shards(){
