@@ -874,16 +874,38 @@ if(CONFIG.musicUrl){
   });
 }
 
+// Start music once the user scrolls past the Quran section into the invitation
+(function(){
+  if(!CONFIG.musicUrl) return;
+  let triggered=false;
+  const mo=new IntersectionObserver(es=>{
+    if(triggered) return;
+    if(es[0].isIntersecting){ triggered=true; startMusic(); mo.disconnect(); }
+  },{threshold:0.15});
+  const inv=document.getElementById('invitation');
+  if(inv) mo.observe(inv);
+})();
+
 function latch(){
   try{
     const C=new (window.AudioContext||window.webkitAudioContext)();
-    const n=C.createBufferSource(), len=C.sampleRate*.35, buf=C.createBuffer(1,len,C.sampleRate), ch=buf.getChannelData(0);
-    for(let i=0;i<len;i++) ch[i]=(Math.random()*2-1)*Math.pow(1-i/len,3.2);
-    n.buffer=buf;
-    const f=C.createBiquadFilter(); f.type='bandpass'; f.frequency.value=1100; f.Q.value=.8;
-    const g=C.createGain(); g.gain.setValueAtTime(.32,C.currentTime);
-    g.gain.exponentialRampToValueAtTime(.001,C.currentTime+.35);
-    n.connect(f).connect(g).connect(C.destination); n.start();
+    const out=C.createGain(); out.gain.value=0.45; out.connect(C.destination);
+    // warm delay for hall reverb
+    const dly=C.createDelay(0.4); const fb=C.createGain(); fb.gain.value=0.22;
+    dly.delayTime.value=0.18; dly.connect(fb); fb.connect(dly); dly.connect(out);
+    // D-minor arpeggio: D4 F4 A4 D5 — ascending, bell-like
+    [[293.66,0],[349.23,0.11],[440,0.22],[587.33,0.38]].forEach(([freq,t])=>{
+      [1,2,3,4].forEach((h,hi)=>{
+        const osc=C.createOscillator(), g=C.createGain();
+        osc.type='sine'; osc.frequency.value=freq*h;
+        const vol=[0.55,0.18,0.07,0.03][hi];
+        g.gain.setValueAtTime(0,C.currentTime+t);
+        g.gain.linearRampToValueAtTime(vol,C.currentTime+t+0.012);
+        g.gain.exponentialRampToValueAtTime(0.001,C.currentTime+t+1.4-(hi*0.15));
+        osc.connect(g); g.connect(out); g.connect(dly);
+        osc.start(C.currentTime+t); osc.stop(C.currentTime+t+1.6);
+      });
+    });
   }catch(e){}
 }
 
@@ -923,7 +945,7 @@ function openDoor(){
   document.getElementById('sealOuter').style.opacity='0';
   const inner=document.getElementById('sealInner');
   inner.style.transform='scale(1.6)'; inner.style.opacity='0';
-  shards(); latch(); startMusic();
+  shards(); latch();
   if(navigator.vibrate) navigator.vibrate([30,50,60]);
   setTimeout(()=>{                       // 400ms — cause separated from effect
     gate.classList.add('open'); dust();
