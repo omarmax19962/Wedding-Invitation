@@ -874,17 +874,7 @@ if(CONFIG.musicUrl){
   });
 }
 
-// Start music once the user scrolls past the Quran section into the invitation
-(function(){
-  if(!CONFIG.musicUrl) return;
-  let triggered=false;
-  const mo=new IntersectionObserver(es=>{
-    if(triggered) return;
-    if(es[0].isIntersecting){ triggered=true; startMusic(); mo.disconnect(); }
-  },{threshold:0.15});
-  const inv=document.getElementById('invitation');
-  if(inv) mo.observe(inv);
-})();
+
 
 function latch(){
   try{
@@ -945,7 +935,7 @@ function openDoor(){
   document.getElementById('sealOuter').style.opacity='0';
   const inner=document.getElementById('sealInner');
   inner.style.transform='scale(1.6)'; inner.style.opacity='0';
-  shards(); latch();
+  shards(); latch(); setTimeout(startMusic, 5000);
   if(navigator.vibrate) navigator.vibrate([30,50,60]);
   setTimeout(()=>{                       // 400ms — cause separated from effect
     gate.classList.add('open'); dust();
